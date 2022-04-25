@@ -37,6 +37,7 @@ setup(
         'console_scripts': [
             'ulozto-downloader = uldlib.cmd:run',
             'uld = uldlib.cmd:run',
+            'uldui = uldui.cmd:run',
         ]
     }
 )

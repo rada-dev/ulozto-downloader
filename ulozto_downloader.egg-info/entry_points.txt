@@ -1,0 +1,5 @@
+[console_scripts]
+uld = uldlib.cmd:run
+uldui = uldui.cmd:run
+ulozto-downloader = uldlib.cmd:run
+
