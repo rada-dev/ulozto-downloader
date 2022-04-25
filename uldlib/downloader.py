@@ -1,4 +1,4 @@
-from .const import CLI_STATUS_STARTLINE, DOWNPOSTFIX, DOWN_CHUNK_SIZE
+from .const import CLI_STATUS_STARTLINE, DOWNPOSTFIX, DOWN_CHUNK_SIZE, CACHEPOSTFIX
 from . import utils
 from .torrunner import TorRunner
 from .segfile import SegFileLoader, SegFileMonitor
@@ -361,3 +361,8 @@ class Downloader:
         if os.path.exists(udown_file):
             print(f"Delete file: {udown_file}")
             os.remove(udown_file)
+        # remove .ucache file
+        ucache_file = output_filename + CACHEPOSTFIX
+        if os.path.exists(ucache_file):
+            print(f"Delete file: {ucache_file}")
+            os.remove(ucache_file)
