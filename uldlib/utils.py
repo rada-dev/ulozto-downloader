@@ -1,6 +1,10 @@
 import sys
 import colors
-from . import const
+try:
+    from . import const
+except ImportError:
+    import const
+
 
 def _print(text, x=0, y=0):
     sys.stdout.write("\033[{};{}H".format(y, x))

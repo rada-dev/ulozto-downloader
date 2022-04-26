@@ -20,10 +20,10 @@ class UldListView(uw.WidgetWrap):
     def create_total_list_item(self):
         return list_item.ListItem(0, {"name": "Total"}, "footer", "country_selected")
 
-    def AddLink(self, link):
+    def AddItem(self, text):
         i = len(self.walker)
         attr = f"country{i % 2}"
-        data = {"name": link, "pop": "325,084,756", "gdp": "$ 19.485 trillion"}
+        data = {"name": text, "pop": "325,084,756", "gdp": "$ 19.485 trillion"}
         w = list_item.ListItem(i, data, attr, "country_selected")
         self.walker.append(w)
 

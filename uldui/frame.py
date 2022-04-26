@@ -7,8 +7,15 @@ try:
 except ImportError:
     from . import detail_view, list_view, popups
 
+from uldlib import page, downloader, torrunner
+
 
 class UldFrame(uw.Frame):
+
+    TARGET_DIR = ""
+    PARTS = 10
+    SIMUL = 5
+
     palette = [
         ("bg", "default", "default"),
         ("country0", "white", "default"),
@@ -20,11 +27,14 @@ class UldFrame(uw.Frame):
         ('popup_footer', 'black', 'dark green'),
         ('banner', 'black', 'light gray'),
         ('selectable', 'white', 'black'),
-        ('focus', 'black', 'light gray')
+        ('focus', 'black', 'light gray'),
+        ('popup_status', 'black', 'light magenta')
     ]
 
-    def __init__(self, print_part_info_queue):
+    def __init__(self, downloaders, print_part_info_queue):
+        self.downloaders = downloaders
         self.print_part_info_queue = print_part_info_queue
+        self.pages = []
 
         self.thread = threading.Thread(target=self.update_ui)
         self.thread.start()
@@ -68,7 +78,10 @@ class UldFrame(uw.Frame):
         self.summary_view.set_country(data)
 
     def AddLink(self, link):
-        self.list_view.AddLink(link)
+        tor = torrunner.TorRunner()
+        self.pages.append(page.Page(link, target_dir=self.TARGET_DIR, parts=self.PARTS, tor=tor))
+        self.pages[-1].parse()
+        self.list_view.AddItem(self.pages[-1].filename)
         
     def keypress(self, size, key):
         if key == "f6":

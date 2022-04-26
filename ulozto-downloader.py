@@ -21,12 +21,14 @@ def main():
 
     print_part_info_queue = multiprocessing.Queue(maxsize=0)
 
+    simul = 5
     url = "https://ulozto.cz/file/ypZ91KycjCle/shrek-1-cz-en-1080p-mkv#!ZGp4LGR2ZJR2AzMzAzZ1MQOuAwAuZ2IfD2b4K0S3BQShZQR4AN=="
     parts = 10
     output = ""
-    d = downloader_pool.Downloader(captcha_solve_fnc, print_part_info_queue)
-    d.download(url, parts, output)
-    w = frame.UldFrame(print_part_info_queue)
+    downloaders = []
+    for i in range(simul):
+        downloaders.append(downloader_pool.Downloader(captcha_solve_fnc, print_part_info_queue))
+    w = frame.UldFrame(downloaders, print_part_info_queue)
     a = app.App(w)
 
     a.start()

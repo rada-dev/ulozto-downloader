@@ -2,7 +2,10 @@ from os import path, remove
 from math import ceil
 from time import time
 import re
-from .const import CACHEPOSTFIX
+try:
+    from .const import CACHEPOSTFIX
+except ImportError:
+    from const import CACHEPOSTFIX
 
 
 class LinkCache:

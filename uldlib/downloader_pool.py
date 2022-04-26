@@ -8,6 +8,7 @@ import requests
 import os
 import sys
 import multiprocessing as mp
+import threading
 import time
 from datetime import timedelta
 from types import FunctionType
@@ -25,6 +26,7 @@ class Downloader:
         self.captcha_solve_func = captcha_solve_func
         self.cli_initialized = False
         self.download_url_queue = mp.Queue(maxsize=0)
+        self.thread = None
         self.monitor = None
 
     def terminate(self):
@@ -375,3 +377,12 @@ class Downloader:
         if os.path.exists(ucache_file):
             print(f"Delete file: {ucache_file}")
             os.remove(ucache_file)
+
+    def download_thread(self, url, parts=10, target_dir=""):
+        self.thread = threading.Thread(target=self.download, args=(url, parts, target_dir))
+        self.thread.start()
+
+    def join(self):
+        if self.thread is not None:
+            self.thread.join()
+

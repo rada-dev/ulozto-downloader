@@ -1,11 +1,14 @@
 import socket
 import stem.process
 from stem.control import Controller
-from .utils import print_tor_status
 import os
 import uuid
 import shutil
 import re
+try:
+    from .utils import print_tor_status
+except ImportError:
+    from utils import print_tor_status
 
 
 class TorRunner:

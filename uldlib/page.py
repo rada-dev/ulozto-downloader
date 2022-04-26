@@ -5,8 +5,12 @@ import sys
 import requests
 import colors
 
-from .const import XML_HEADERS
-from .linkcache import LinkCache
+try:
+    from .const import XML_HEADERS
+    from .linkcache import LinkCache
+except ImportError:
+    from const import XML_HEADERS
+    from linkcache import LinkCache
 
 from requests.sessions import RequestsCookieJar
 
@@ -305,3 +309,9 @@ class Page:
             except requests.exceptions.ReadTimeout:
                 self._error_net_stat(
                     "ReadTimeout error, try new TOR session.", print_func)
+
+
+if __name__ == '__main__':
+    import torrunner
+    url = "https://ulozto.cz/file/cQmnCHRTWiYg/shrek-2-1080p-mkv#!ZJIyZGR2AGH1MGp1ZQOwZJLlMGpkATqMnIqHoRWOJTxjpmLjAj=="
+    Page(url, "", 5, torrunner.TorRunner())
