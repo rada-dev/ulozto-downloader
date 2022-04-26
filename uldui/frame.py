@@ -81,18 +81,14 @@ class UldFrame(uw.Frame):
             ]), "footer")
 
         uw.connect_signal(self.list_view, 'show_details', self.show_details)
-        uw.connect_signal(self.list_view, 'show_details', self.show_summary)
 
         columns = uw.Columns([('weight', 1, self.box_list), ('weight', 1, self.box_details)])
 
         super(UldFrame, self).__init__(header=self.box_summary, body=columns, footer=self.footer)
         self.thread.start()
 
-    def show_details(self, country):
-        self.detail_view.set_country(country)
-
-    def show_summary(self, data):
-        self.summary_view.set_country(data)
+    def show_details(self, data):
+        self.detail_view.show_details()
 
     def AddLink(self, page_):
         self.pages.append(page_)
@@ -100,7 +96,13 @@ class UldFrame(uw.Frame):
         self.list_view.AddItem(self.pages[-1].filename)
         
     def keypress(self, size, key):
-        if key == "f6":
+        if key == "f2":
+            i_highlighted = self.list_view.walker.focus
+            url = self.pages[i_highlighted].url
+            parts = self.pages[i_highlighted].parts
+            target_dir = self.pages[i_highlighted].target_dir
+            self.downloaders[i_highlighted].download_thread(url, parts, target_dir)
+        elif key == "f6":
             self.loop.widget = self.olay_add_link
         super(UldFrame, self).keypress(size, key)
 
