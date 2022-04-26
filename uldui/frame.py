@@ -21,7 +21,7 @@ class UldFrame(uw.Frame):
     ]
 
     def __init__(self):
-        self.loop = None
+        self.loop = uw.MainLoop(self, self.palette, unhandled_input=self.unhandled_input, pop_ups=True)
         self.summary_view = detail_view.UldDetailView()
         self.list_view = list_view.UldListView()
         self.detail_view = detail_view.UldDetailView()
@@ -68,4 +68,9 @@ class UldFrame(uw.Frame):
     def keypress(self, size, key):
         if key == "f6":
             self.loop.widget = self.olay_add_link
+
         super(UldFrame, self).keypress(size, key)
+
+
+    def unhandled_input(self, key):
+        print("unhandled input", key)
