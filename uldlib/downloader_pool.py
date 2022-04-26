@@ -301,7 +301,7 @@ class Downloader:
         self.monitor.start()
 
         # 3. Start all downloads fill self.processes
-        for i, part in enumerate(downloads):
+        for part in downloads:
             if self.terminating:
                 return
             id = part.id
@@ -322,7 +322,7 @@ class Downloader:
 
             # Start download process in another process (parallel):
             p = mp.Process(target=Downloader._download_part,
-                           args=(i, part, self.download_url_queue))
+                           args=(id, part, self.download_url_queue))
             p.start()
             self.processes.append(p)
 
