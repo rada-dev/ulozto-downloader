@@ -2,6 +2,7 @@ import sys
 
 import urwid as uw
 import pyperclip
+from uldlib import page, torrunner
 
 
 class UldEdit(uw.Edit):
@@ -10,10 +11,6 @@ class UldEdit(uw.Edit):
         self._frame = frame
         super(UldEdit, self).__init__(caption, edit_text, multiline, align, wrap, allow_tab, edit_pos, layout, mask)
         uw.register_signal(self.__class__, ['show_status'])
-
-    def link_valid(self):
-        link = self.text.strip().lower()
-        return link and "\t" not in link and "\n" not in link and " " not in link
 
     def keypress(self, size, key):
         if key == "f1":
@@ -26,16 +23,16 @@ class UldEdit(uw.Edit):
         elif key == "esc":
             self._frame.loop.widget = self._frame
         elif key == "enter":
-            text = self.get_text()[0]
-            link = text.strip()
-            if self.link_valid():
-                self._frame.AddLink(link)
+            try:
+                p = page.Page(self.text.strip(), self._frame.TARGET_DIR, self._frame.PARTS, torrunner.TorRunner())
+                self._frame.AddLink(p)
                 self.edit_text = ""
                 uw.emit_signal(self, 'show_status', "")
                 self._frame.loop.widget = self._frame
-            else:
-                uw.emit_signal(self, 'show_status', "Invalid text")
-
+            except AttributeError:
+                uw.emit_signal(self, 'show_status', "Invalid link: Invalid url")
+            except RuntimeError as e:
+                uw.emit_signal(self, 'show_status', f"Invalid link: File not found")
         else:
             super(UldEdit, self).keypress(size, key)
             uw.emit_signal(self, 'show_status', "")
@@ -57,7 +54,7 @@ class UldOverlay(uw.Overlay):
             ]), "popup_footer")
         self.status_text = uw.Text("", uw.CENTER)
         self.status = uw.AttrMap(self.status_text, "popup_status")
-        self.footer = uw.Columns([("weight", 3, self.keys), self.status])
+        self.footer = uw.Columns([("weight", 1, self.keys), ("weight", 1, self.status)])
         self.pile = uw.Pile([self.text, self.footer])
         super(UldOverlay, self).__init__(self.pile, frame, 'center', 10000, 'middle', None)
         self.flip_palette(False)
