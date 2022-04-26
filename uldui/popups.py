@@ -16,6 +16,11 @@ class UldEdit(uw.Edit):
             self.edit_text = ""
         elif key == "esc":
             self._frame.loop.widget = self._frame
+        elif key == "enter":
+            link = self.text
+            self._frame.AddLink(link)
+            self.edit_text = ""
+            self._frame.loop.widget = self._frame
         else:
             super(UldEdit, self).keypress(size, key)
 
@@ -28,6 +33,7 @@ class UldOverlay(uw.Overlay):
             uw.Text([
                 ("key", "F1"), "Paste",
                 ("key", "F2"), "Clear",
+                ("key", "ENTER"), "AddLink",
                 ("key", "ESC"), "Close",
             ]), "popup_footer")
         self.pile = uw.Pile([self.text, self.footer])

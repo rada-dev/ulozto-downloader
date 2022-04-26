@@ -1,4 +1,7 @@
+import time
+
 import urwid as uw
+import threading
 try:
     import detail_view, list_view, popups
 except ImportError:
@@ -20,11 +23,16 @@ class UldFrame(uw.Frame):
         ('focus', 'black', 'light gray')
     ]
 
-    def __init__(self):
+    def __init__(self, print_part_info_queue):
+        self.print_part_info_queue = print_part_info_queue
+
+        self.thread = threading.Thread(target=self.update_ui)
+        self.thread.start()
+
         self.loop = uw.MainLoop(self, self.palette, unhandled_input=self.unhandled_input, pop_ups=True)
-        self.summary_view = detail_view.UldDetailView()
+        self.summary_view = detail_view.UldDetailView(3, self.print_part_info_queue)
         self.list_view = list_view.UldListView()
-        self.detail_view = detail_view.UldDetailView()
+        self.detail_view = detail_view.UldDetailView(10, self.print_part_info_queue)
         col_rows = uw.raw_display.Screen().get_cols_rows()
         h = col_rows[0] - 2
         f1 = uw.Filler(self.list_view, valign='top', height=h)
@@ -59,18 +67,21 @@ class UldFrame(uw.Frame):
     def show_summary(self, data):
         self.summary_view.set_country(data)
 
-    def update_data(self):
-        l = []  # https://databank.worldbank.org/embed/Population-and-GDP-by-Country/id/29c4df41
-        l.append({"name": "USAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "pop": "325,084,756", "gdp": "$ 19.485 trillion"})
-        l.append({"name": "USAaaaaaaaaaaaaaaaaaaaaaaaaaaa", "pop": "325,084,756", "gdp": "$ 19.485 trillion"})
-        self.list_view.set_data(l)
+    def AddLink(self, link):
+        self.list_view.AddLink(link)
         
     def keypress(self, size, key):
         if key == "f6":
             self.loop.widget = self.olay_add_link
-
         super(UldFrame, self).keypress(size, key)
 
-
     def unhandled_input(self, key):
-        print("unhandled input", key)
+        pass
+
+    def update_ui(self):
+        while True:
+            i, line = self.print_part_info_queue.get()
+            if i == -1 and line == "quit":
+                return
+            else:
+                self.detail_view.write_line(i, line)

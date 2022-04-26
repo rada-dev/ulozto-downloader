@@ -3,10 +3,12 @@ import urwid as uw
 
 class UldDetailView(uw.WidgetWrap):
 
-    def __init__(self):
-        t = uw.Text("")
-        super(UldDetailView, self).__init__(t)
+    def __init__(self, n_lines, print_part_info_queue):
+        self.text = uw.Text("")
+        self.lines = [""]*n_lines
+        self.print_part_info_queue = print_part_info_queue
+        super(UldDetailView, self).__init__(self.text)
 
-    def set_country(self, data):
-        s = f'Name: {data["name"]}\nPop:  {data["pop"]}\nGDP:  {data["gdp"]}'
-        self._w.set_text(s)
+    def write_line(self, i, line):
+        self.lines[i] = line
+        self.text.set_text("\n".join(self.lines))

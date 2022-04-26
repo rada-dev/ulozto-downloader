@@ -1,15 +1,11 @@
-import urwid as uw
-try:
-    import frame
-except ImportError:
-    from . import frame
-
-
 class App(object):
 
-    def __init__(self):
-        self.frame = frame.UldFrame()
+    def __init__(self, frame):
+        self.frame = frame
 
     def start(self):
-        self.frame.update_data()
         self.frame.loop.run()
+
+    def join(self):
+        self.frame.print_part_info_queue.put((-1, "quit"))
+        self.frame.thread.join()
