@@ -5,13 +5,13 @@ except ImportError:
     from . import list_item
 
 
-class ListView(uw.WidgetWrap):
+class UldListView(uw.WidgetWrap):
 
     def __init__(self):
         uw.register_signal(self.__class__, ['show_details'])
         self.walker = uw.SimpleFocusListWalker([])
         self.lb = uw.ListBox(self.walker)
-        super(ListView, self).__init__(self.lb)
+        super(UldListView, self).__init__(self.lb)
 
     def modified(self):
         focus_w, _ = self.walker.get_focus()

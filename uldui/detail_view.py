@@ -1,11 +1,11 @@
 import urwid as uw
 
 
-class DetailView(uw.WidgetWrap):
+class UldDetailView(uw.WidgetWrap):
 
     def __init__(self):
         t = uw.Text("")
-        uw.WidgetWrap.__init__(self, t)
+        super(UldDetailView, self).__init__(t)
 
     def set_country(self, data):
         s = f'Name: {data["name"]}\nPop:  {data["pop"]}\nGDP:  {data["gdp"]}'

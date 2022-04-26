@@ -1,3 +1,7 @@
+import sys
+
+import urwid as uw
+import signal
 try:
     import app
 except ImportError:
@@ -5,6 +9,10 @@ except ImportError:
 
 
 def run():
+    def sigint_handler(sig, frame):
+        sys.exit(1)
+    signal.signal(signal.SIGINT, sigint_handler)
+
     a = app.App()
     a.start()
 

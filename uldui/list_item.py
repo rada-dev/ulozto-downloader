@@ -8,7 +8,7 @@ class ListItem(uw.WidgetWrap):
         self.i = i
         self.name = self.data["name"]
         self.speed = 200
-        self.est = "00:00:00"
+        self.est = "--:--:--"
         self.progress = 100.0
         line = uw.Columns([('fixed', 6, self.__i_text), ('weight', 10, self.__name_text), ('fixed', 10, self.__speed_text), ('fixed', 10, self.__est_text), ('fixed', 9, self.__progress_text)])
         t = uw.AttrWrap(line, attr, focus_attr)
@@ -61,11 +61,3 @@ class ListItem(uw.WidgetWrap):
 
     def selectable(self):
         return True
-
-    def keypress(self, size, key):
-        # if key not in ("up", "down"):
-        #     self.text.set_text(key+"\t\t 50%")
-        #     # t = uw.AttrWrap(uw.Text(key), "default", "country_selected")
-        #     #
-        #     # uw.WidgetWrap.__init__(self, t)
-        return key
