@@ -24,6 +24,7 @@ class Downloader:
 
     def __init__(self, captcha_solve_func, print_part_info_queue):
         self.captcha_solve_func = captcha_solve_func
+        self.print_part_info_queue = print_part_info_queue
         self.cli_initialized = False
         self.download_url_queue = mp.Queue(maxsize=0)
         self.thread = None
@@ -322,7 +323,7 @@ class Downloader:
 
             # Start download process in another process (parallel):
             p = mp.Process(target=Downloader._download_part,
-                           args=(id, part, self.download_url_queue))
+                           args=(part, self.download_url_queue, self.print_part_info_queue))
             p.start()
             self.processes.append(p)
 
