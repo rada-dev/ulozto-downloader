@@ -47,6 +47,14 @@ class Downloader:
             self.monitor.terminate()
         print('End download monitor')
 
+    def _captcha_print_func_wrapper(self, text):
+        pass
+        # if not self.cli_initialized:
+        #     sys.stdout.write(colors.blue(
+        #         "[Link solve]\t") + text + "\033[K\r")
+        # else:
+        #     utils.print_captcha_status(text, self.parts)
+
     def _captcha_breaker(self):
         # utils.print_captcha_status(msg, parts)
         for url in self.captcha_download_links_generator:
@@ -173,9 +181,9 @@ class Downloader:
         previously_downloaded = 0
 
         # 1. Prepare downloads
-        print("Starting downloading for url '{}'".format(url))
-        # 1.1 Get all needed information
-        print("Getting info (filename, filesize, ...)")
+        # print("Starting downloading for url '{}'".format(url))
+        # # 1.1 Get all needed information
+        # print("Getting info (filename, filesize, ...)")
 
         try:
             tor = TorRunner()
@@ -183,19 +191,20 @@ class Downloader:
             page.parse()
 
         except RuntimeError as e:
-            print(colors.red('Cannot download file: ' + str(e)))
+            self.download(url, parts, target_dir)
             sys.exit(1)
 
         # Do check - only if .udown status file not exists get question
         output_filename = os.path.join(target_dir, page.filename)
-        if os.path.isfile(output_filename) and not os.path.isfile(output_filename+DOWNPOSTFIX):
-            print(colors.yellow(
-                "WARNING: File '{}' already exists, overwrite it? [y/n] ".format(output_filename)), end="")
-            if input().strip() != 'y':
-                sys.exit(1)
+
+        # if os.path.isfile(output_filename) and not os.path.isfile(output_filename+DOWNPOSTFIX):
+        #     print(colors.yellow(
+        #         "WARNING: File '{}' already exists, overwrite it? [y/n] ".format(output_filename)), end="")
+        #     if input().strip() != 'y':
+        #         sys.exit(1)
 
         if page.quickDownloadURL is not None:
-            print("You are VERY lucky, this is QUICK direct download without CAPTCHA, downloading as 1 quick part :)")
+            # print("You are VERY lucky, this is QUICK direct download without CAPTCHA, downloading as 1 quick part :)")
             self.download_type = "fullspeed direct download (without CAPTCHA)"
             download_url = page.quickDownloadURL
             self.captcha_solve_func = None
@@ -203,12 +212,11 @@ class Downloader:
         if page.slowDownloadURL is not None:
             self.isLimited = True
             if page.isDirectDownload:
-                print("You are lucky, this is slow direct download without CAPTCHA :)")
+                # print("You are lucky, this is slow direct download without CAPTCHA :)")
                 self.download_type = "slow direct download (without CAPTCHA)"
             else:
                 self.isCaptcha = True
-                print(
-                    "CAPTCHA protected download - CAPTCHA challenges will be displayed\n")
+                # print("CAPTCHA protected download - CAPTCHA challenges will be displayed\n")
                 self.download_type = "CAPTCHA protected download"
 
             self.captcha_download_links_generator = page.captcha_download_links_generator(
@@ -224,8 +232,7 @@ class Downloader:
             file_data = SegFileLoader(output_filename, total_size, parts)
             downloads = file_data.make_writers()
         except Exception as e:
-            print(colors.red(
-                f"Failed: Can not create '{output_filename}' error: {e} "))
+            print(colors.red(f"Failed: Can not create '{output_filename}' error: {e} "))
             self.terminate()
             sys.exit()
 
