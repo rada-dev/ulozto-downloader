@@ -6,7 +6,10 @@ class SimpleItem(uw.WidgetWrap):
     def __init__(self, caption, text, attr, focus_attr):
         self.caption = caption
         self.text = text
-        line = uw.Columns([self.__caption_text, self.__text_text])
+        line = uw.Columns([
+            ("fixed", 15, self.__caption_text),
+            self.__text_text
+        ])
         t = uw.AttrWrap(line, attr, focus_attr)
         uw.WidgetWrap.__init__(self, t)
 
@@ -16,8 +19,11 @@ class SimpleItem(uw.WidgetWrap):
 
     @caption.setter
     def caption(self, value):
-        self.__caption = value
-        self.__caption_text = uw.Text(f"{self.caption}")
+        self.__caption = f"{value}"
+        try:
+            self.__caption_text.set_text(self.caption)
+        except AttributeError:
+            self.__caption_text = uw.Text(self.caption)
 
     @property
     def text(self):
@@ -25,8 +31,11 @@ class SimpleItem(uw.WidgetWrap):
 
     @text.setter
     def text(self, value):
-        self.__text = value
-        self.__text_text = uw.Text(self.text)
+        self.__text = f"{value}"
+        try:
+            self.__text_text.set_text(self.text)
+        except AttributeError:
+            self.__text_text = uw.Text(self.text)
 
     def set_value(self, name, value):
         setattr(self, name, value)
@@ -39,18 +48,46 @@ class PartItem(uw.WidgetWrap):
 
     def __init__(self, i_part, attr, focus_attr):
         self.i_part = i_part
-        self.text = "Waiting..."
-        self.percentage = 0.0
+        self.text = "Waiting"
+        self.percentage = 0
         self.size_curr = 0
         self.size_total = 0
         self.speed_curr = 0
         self.speed_avg = 0
         self.elapsed = 0
         self.remaining = 0
-        line = uw.Columns([self.__i_part_text, self.__text_text, self.__percentage_text, self.__size_curr_text, self.__size_total_text, self.__speed_avg_text, self.__speed_curr_text, self.__elapsed_text, self.__remaining_text])
-        line = uw.Columns([('fixed', 6, self.__i_text), ('weight', 10, self.__name_text), ('fixed', 10, self.__speed_text), ('fixed', 10, self.__est_text), ('fixed', 9, self.__progress_text)])
+        line = uw.Columns([
+            ("fixed", 15, self.__caption_text),
+            ("pack", self.__text_text),
+            ("pack", self.__percentage_text),
+            uw.Divider(),
+            ("pack", self.__size_curr_text),
+            ("pack", uw.Text("/")),
+            ("pack", self.__size_total_text),
+            uw.Divider(),
+            ("pack", self.__speed_avg_text),
+            uw.Divider(),
+            ("pack", self.__speed_curr_text),
+            uw.Divider(),
+            ("pack", self.__elapsed_text),
+            uw.Divider(),
+            ("pack", self.__remaining_text)
+        ])
+        # line = uw.Columns([('fixed', 6, self.___text), ('weight', 10, self.__name_text), ('fixed', 10, self.__speed_text), ('fixed', 10, self.__est_text), ('fixed', 9, self.__progress_text)])
         t = uw.AttrWrap(line, attr, focus_attr)
         uw.WidgetWrap.__init__(self, t)
+
+    @property
+    def caption(self):
+        return self.__caption
+
+    @caption.setter
+    def caption(self, value):
+        self.__caption = f"{value}"
+        try:
+            self.__caption_text.set_text(self.caption)
+        except AttributeError:
+            self.__caption_text = uw.Text(self.caption)
 
     @property
     def i_part(self):
@@ -59,7 +96,7 @@ class PartItem(uw.WidgetWrap):
     @i_part.setter
     def i_part(self, value):
         self.__i_part = value
-        self.__i_part_text = uw.Text(f"Part {self.i_part}")
+        self.caption = f"Part {self.i_part}:"
 
     @property
     def text(self):
@@ -67,8 +104,11 @@ class PartItem(uw.WidgetWrap):
 
     @text.setter
     def text(self, value):
-        self.__text = value
-        self.__text_text = uw.Text(self.text)
+        self.__text = f"{value}"
+        try:
+            self.__text_text.set_text(self.text+"... ")
+        except AttributeError:
+            self.__text_text = uw.Text(self.text+"... ")
 
     @property
     def percentage(self):
@@ -77,7 +117,10 @@ class PartItem(uw.WidgetWrap):
     @percentage.setter
     def percentage(self, value):
         self.__percentage = value
-        self.__percentage_text = uw.Text(f"{self.i_part:.1f} %")
+        try:
+            self.__percentage_text.set_text(f"{self.percentage:.1f} %")
+        except AttributeError:
+            self.__percentage_text = uw.Text(f"{self.percentage:.1f} %")
 
     @property
     def size_curr(self):
@@ -86,7 +129,10 @@ class PartItem(uw.WidgetWrap):
     @size_curr.setter
     def size_curr(self, value):
         self.__size_curr = value
-        self.__size_curr_text = uw.Text(f"{self.size_curr:.2f} MB/", align=uw.RIGHT)
+        try:
+            self.__size_curr_text.set_text(f"{self.size_curr:.2f} MB")
+        except AttributeError:
+            self.__size_curr_text = uw.Text(f"{self.size_curr:.2f} MB")
 
     @property
     def size_total(self):
@@ -95,7 +141,10 @@ class PartItem(uw.WidgetWrap):
     @size_total.setter
     def size_total(self, value):
         self.__size_total = value
-        self.__size_total_text = uw.Text(f"{self.size_total:.2f} MB")
+        try:
+            self.__size_total_text.set_text(f"{self.size_total:.2f} MB")
+        except AttributeError:
+            self.__size_total_text = uw.Text(f"{self.size_total:.2f} MB")
 
     @property
     def speed_curr(self):
@@ -104,7 +153,10 @@ class PartItem(uw.WidgetWrap):
     @speed_curr.setter
     def speed_curr(self, value):
         self.__speed_curr = value
-        self.__speed_curr_text = uw.Text(f"{self.speed_curr:.2f} kB/s")
+        try:
+            self.__speed_curr_text.set_text(f"curr: {self.speed_curr:.2f} kB/s")
+        except AttributeError:
+            self.__speed_curr_text = uw.Text(f"curr: {self.speed_curr:.2f} kB/s")
 
     @property
     def speed_avg(self):
@@ -113,28 +165,45 @@ class PartItem(uw.WidgetWrap):
     @speed_avg.setter
     def speed_avg(self, value):
         self.__speed_avg = value
-        self.__speed_avg_text = uw.Text(f"{self.speed_avg:.2f} kB/s")
+        try:
+            self.__speed_avg_text.set_text(f"avg: {self.speed_avg:.2f} kB/s")
+        except AttributeError:
+            self.__speed_avg_text = uw.Text(f"avg: {self.speed_avg:.2f} kB/s")
 
     @property
     def elapsed(self):
         return self.__elapsed
 
     @elapsed.setter
-    def elapsed(self, value):
-        self.__elapsed = value
-        self.__elapsed_text = uw.Text(f"{self.elapsed}")
+    def elapsed(self, seconds):
+        self.__elapsed = seconds
+        value = self.seconds_to_hh_mm_ss(seconds)
+        try:
+            self.__elapsed_text.set_text(f"elapsed: {value}")
+        except AttributeError:
+            self.__elapsed_text = uw.Text(f"elapsed: {value}")
 
     @property
     def remaining(self):
         return self.__remaining
 
     @remaining.setter
-    def remaining(self, value):
-        self.__remaining = value
-        self.__remaining_text = uw.Text(f"{self.remaining}")
+    def remaining(self, seconds):
+        self.__remaining = seconds
+        value = self.seconds_to_hh_mm_ss(seconds)
+        try:
+            self.__remaining_text.set_text(f"remaining: {value}")
+        except AttributeError:
+            self.__remaining_text = uw.Text(f"remaining: {value}")
 
     def set_value(self, name, value):
         setattr(self, name, value)
+
+    @staticmethod
+    def seconds_to_hh_mm_ss(seconds):
+        hh, ss = divmod(seconds, 3600)
+        mm, ss = divmod(ss, 60)
+        return f"{hh:02d}:{mm:02d}:{ss:02d}"
 
     def selectable(self):
         return True

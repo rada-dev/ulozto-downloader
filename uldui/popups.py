@@ -1,5 +1,3 @@
-import sys
-
 import urwid as uw
 import pyperclip
 from uldlib import page, torrunner
@@ -10,7 +8,7 @@ class UldEdit(uw.Edit):
     def __init__(self, frame, caption="", edit_text="", multiline=False, align=uw.LEFT, wrap=uw.SPACE, allow_tab=False, edit_pos=None, layout=None, mask=None):
         self._frame = frame
         super(UldEdit, self).__init__(caption, edit_text, multiline, align, wrap, allow_tab, edit_pos, layout, mask)
-        uw.register_signal(self.__class__, ['show_status'])
+        uw.register_signal(self.__class__, ['show_status', 'add_item'])
 
     def keypress(self, size, key):
         if key == "f1":
@@ -25,7 +23,8 @@ class UldEdit(uw.Edit):
         elif key == "enter":
             try:
                 p = page.Page(self.text.strip(), self._frame.TARGET_DIR, self._frame.PARTS, torrunner.TorRunner())
-                self._frame.AddLink(p)
+                p.parse()
+                uw.emit_signal(self, "add_item", p)
                 self.edit_text = ""
                 uw.emit_signal(self, 'show_status', "")
                 self._frame.loop.widget = self._frame

@@ -7,8 +7,6 @@ try:
 except ImportError:
     from . import detail_view, list_view, popups
 
-from uldlib import page, downloader, torrunner
-
 
 class UldFrame(uw.Frame):
 
@@ -35,10 +33,9 @@ class UldFrame(uw.Frame):
         self.thread = threading.Thread(target=self.update_ui)
 
         self.loop = uw.MainLoop(self, self.palette, unhandled_input=self.unhandled_input, pop_ups=True)
-        self.loop.screen.set_terminal_properties(colors=256)
 
         self.list_view = list_view.UldListView()
-        self.detail_view = detail_view.UldDetailView(10, self.print_part_info_queue)
+        self.detail_view = detail_view.UldDetailView(self.PARTS, self.print_part_info_queue)
 
         f1 = uw.Filler(self.list_view, valign="top", height=1000)
         f2 = uw.Filler(self.detail_view, valign="top", height=1000)
@@ -59,27 +56,22 @@ class UldFrame(uw.Frame):
                 ("key", "Tab"), "Switch",
             ]), "footer")
 
-        uw.connect_signal(self.list_view, 'show_details', self.show_details)
+        uw.connect_signal(self.list_view, 'show_details', self.detail_view.show_details)
+        uw.connect_signal(self.olay_add_link.edit, 'add_item', self.list_view.AddItem)
+        uw.connect_signal(self.list_view, 'added_item', self.detail_view.added_item)
 
         self.pile = uw.Pile([('weight', 1, self.box_list), ('weight', 1, self.box_details)], focus_item=0)
 
         super(UldFrame, self).__init__(body=self.pile, footer=self.footer)
         self.thread.start()
-
-    def show_details(self, data):
-        self.detail_view.show_details()
-
-    def AddLink(self, page_):
-        self.pages.append(page_)
-        self.pages[-1].parse()
-        self.list_view.AddItem(self.pages[-1].filename)
         
     def keypress(self, size, key):
         if key == "f2":
             i_highlighted = self.list_view.walker.focus
-            url = self.pages[i_highlighted].url
-            parts = self.pages[i_highlighted].parts
-            target_dir = self.pages[i_highlighted].target_dir
+            item = self.list_view.walker[i_highlighted]
+            url = item.data.url
+            parts = item.data.parts
+            target_dir = item.data.target_dir
             self.downloaders[i_highlighted].download_thread(url, parts, target_dir)
         elif key == "f6":
             self.loop.widget = self.olay_add_link

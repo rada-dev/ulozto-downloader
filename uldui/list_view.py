@@ -8,24 +8,24 @@ except ImportError:
 class UldListView(uw.WidgetWrap):
 
     def __init__(self):
-        uw.register_signal(self.__class__, ['show_details'])
+        uw.register_signal(self.__class__, ['show_details', 'added_item'])
         self.walker = uw.SimpleFocusListWalker([])
         self.lb = uw.ListBox(self.walker)
+        uw.connect_signal(self.walker, "modified", self.modified)
         super(UldListView, self).__init__(self.lb)
 
     def modified(self):
-        focus_w, _ = self.walker.get_focus()
-        uw.emit_signal(self, 'show_details', focus_w.data)
+        item, _ = self.walker.get_focus()
+        uw.emit_signal(self, 'show_details', item.data)
 
     def create_total_list_item(self):
         return list_item.ListItem(0, {"name": "Total"}, "footer", "item_selected")
 
-    def AddItem(self, text):
+    def AddItem(self, data):
         i = len(self.walker)
-        attr = f"item{i % 2}"
-        data = {"name": text, "pop": "325,084,756", "gdp": "$ 19.485 trillion"}
-        w = list_item.ListItem(i, data, attr, "item_selected")
+        w = list_item.ListItem(i, data, f"item{i % 2}", "item_selected")
         self.walker.append(w)
+        uw.emit_signal(self, "added_item", i, data)
 
     def set_data(self, countries):
         countries_widgets = []
