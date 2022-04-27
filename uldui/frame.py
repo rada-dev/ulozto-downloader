@@ -17,24 +17,7 @@ class UldFrame(uw.Frame):
     SIMUL = 5
 
     palette = [
-        # ('bg', '#f00', '#f00', '#f00', '#f00', '#f00'),
-        # ('orange', '', '', '', '', '#f80'),
-        # ('yellow', '', '', '', '', '#ff0'),
-        # ('green', '', '', '', '', '#0f0'),
-        # ('blue', '', '', '', '', '#00f'),
-        # ('purple_dark', '', '', '', '', '#508'),
-        # ('purple_light', '', '', '', '', '#90f')
-
-        # ('bg', '', '', '', '#aaa', '#000'),
-        # ('title', '', '', '', '#aaa,bold', '#000'),
-        # ('country0', '', '', '', 'white', 'default'),
-        # ('country1', '', '', '', 'default', 'default'),
-        # ('country_selected', '', '', '', 'black', '#f80'),
-        # ('footer', '', '', '', 'black', 'dark cyan'),
-        # ('popup', '', '', '', 'black', '#666'),
-        # ('popup_footer', '', '', '', 'black', 'dark green'),
-
-        ("bg", "default", "default"),
+        ("bg", "light gray", "black"),
         ("item0", "white", "black"),
         ("item1", "light gray", "black"),
         ("item_selected", "black", "dark green"),
@@ -42,7 +25,6 @@ class UldFrame(uw.Frame):
         ("title", "default,bold", "default"),
         ('popup', 'black', 'dark gray'),
         ('popup_footer', 'black', 'dark green'),
-        ('banner', 'black', 'light gray'),
     ]
 
     def __init__(self, downloaders, print_part_info_queue):
@@ -74,13 +56,14 @@ class UldFrame(uw.Frame):
                 ("key", "F7"), "AddLinkFile",
                 ("key", "F8"), "RemoveLink",
                 ("key", "F9"), "RemoveFinished",
+                ("key", "Tab"), "Switch",
             ]), "footer")
 
         uw.connect_signal(self.list_view, 'show_details', self.show_details)
 
-        pile = uw.Pile([('weight', 1, self.box_list), ('weight', 1, self.box_details)])
+        self.pile = uw.Pile([('weight', 1, self.box_list), ('weight', 1, self.box_details)], focus_item=0)
 
-        super(UldFrame, self).__init__(body=pile, footer=self.footer)
+        super(UldFrame, self).__init__(body=self.pile, footer=self.footer)
         self.thread.start()
 
     def show_details(self, data):
@@ -100,6 +83,15 @@ class UldFrame(uw.Frame):
             self.downloaders[i_highlighted].download_thread(url, parts, target_dir)
         elif key == "f6":
             self.loop.widget = self.olay_add_link
+        elif key == "tab":
+            if self.pile.focus_position == 0:   # upper listbox in focus
+                self.pile.set_focus(1)
+                if len(self.detail_view.walker) > 0:
+                    self.detail_view.lb.set_focus(0)
+            else:
+                self.pile.set_focus(0)
+                if len(self.list_view.walker) > 0:
+                    self.list_view.lb.set_focus(0)
         super(UldFrame, self).keypress(size, key)
 
     def unhandled_input(self, key):
