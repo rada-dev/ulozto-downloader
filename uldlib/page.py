@@ -219,7 +219,7 @@ class Page:
 
         while (self.numTorLinks + self.alreadyDownloaded) < self.parts:
             if not self.torRunning:
-                print("Starting TOR...")
+                # print("Starting TOR...")
                 # tor started after cli initialized
                 try:
                     self.tor.start(

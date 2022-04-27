@@ -55,7 +55,7 @@ class Downloader:
         # else:
         #     utils.print_captcha_status(text, self.parts)
 
-    def _captcha_breaker(self):
+    def _captcha_breaker(self, page, parts):
         # utils.print_captcha_status(msg, parts)
         for url in self.captcha_download_links_generator:
             self.download_url_queue.put(url)
