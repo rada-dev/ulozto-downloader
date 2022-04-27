@@ -119,6 +119,7 @@ class Downloader:
             if chunk:  # filter out keep-alive new chunks
                 part.write(chunk)
                 part.now_downloaded += len(chunk)
+
                 elapsed = time.time() - part.started
 
                 # Print status line downloaded and speed
@@ -137,8 +138,7 @@ class Downloader:
                 # ))
 
                 print_part_info_queue.put((f"part {idx}", "size_curr", part.downloaded / 1024**2))
-                print_part_info_queue.put((f"part {idx}", "speed_curr", speed / 1024))
-                print_part_info_queue.put((f"part {idx}", "speed_avg", part.downloaded / 1024 / elapsed))
+                print_part_info_queue.put((f"part {idx}", "speed_avg", part.now_downloaded / 1024 / elapsed))
                 print_part_info_queue.put((f"part {idx}", "elapsed", elapsed))
                 print_part_info_queue.put((f"part {idx}", "remaining", remaining))
 

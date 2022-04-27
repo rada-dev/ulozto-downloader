@@ -52,7 +52,6 @@ class PartItem(uw.WidgetWrap):
         self.percentage = 0
         self.size_curr = 0
         self.size_total = 0
-        self.speed_curr = 0
         self.speed_avg = 0
         self.elapsed = 0
         self.remaining = 0
@@ -66,8 +65,6 @@ class PartItem(uw.WidgetWrap):
             ("pack", self.__size_total_text),
             uw.Divider(),
             ("pack", self.__speed_avg_text),
-            uw.Divider(),
-            ("pack", self.__speed_curr_text),
             uw.Divider(),
             ("pack", self.__elapsed_text),
             uw.Divider(),
@@ -119,6 +116,7 @@ class PartItem(uw.WidgetWrap):
         self.__percentage = value
         try:
             self.__percentage_text.set_text(f"{self.percentage:.1f} %")
+            self.__percentage_text.render()
         except AttributeError:
             self.__percentage_text = uw.Text(f"{self.percentage:.1f} %")
 
@@ -145,18 +143,6 @@ class PartItem(uw.WidgetWrap):
             self.__size_total_text.set_text(f"{self.size_total:.2f} MB")
         except AttributeError:
             self.__size_total_text = uw.Text(f"{self.size_total:.2f} MB")
-
-    @property
-    def speed_curr(self):
-        return self.__speed_curr
-
-    @speed_curr.setter
-    def speed_curr(self, value):
-        self.__speed_curr = value
-        try:
-            self.__speed_curr_text.set_text(f"curr: {self.speed_curr:.2f} kB/s")
-        except AttributeError:
-            self.__speed_curr_text = uw.Text(f"curr: {self.speed_curr:.2f} kB/s")
 
     @property
     def speed_avg(self):
