@@ -127,9 +127,8 @@ class SegFileLoader:
 class SegFileMonitor:
     """Monitor data in download status file (.udown)"""
 
-    def __init__(self, filename, print_func, sec=1/10):
+    def __init__(self, filename, sec=1/10):
         self.progfile = filename + const.DOWNPOSTFIX
-        self.print_func = print_func
         self.sec = sec
         self.sfp = None
         self.done = False

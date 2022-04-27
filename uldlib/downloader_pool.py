@@ -6,7 +6,7 @@ from .page import Page
 import colors
 import requests
 import os
-# import sys
+import sys
 import multiprocessing as mp
 import threading
 import time
@@ -22,10 +22,9 @@ class Downloader:
     # captcha_solve_func: FunctionType
     # parts: int
 
-    def __init__(self, captcha_solve_func, print_part_info_queue):
+    def __init__(self, captcha_solve_func, print_info_queue):
         self.captcha_solve_func = captcha_solve_func
-        self.print_part_info_queue = print_part_info_queue
-        # self.cli_initialized = False
+        self.print_part_info_queue = print_info_queue
         self.terminating = False
         self.download_url_queue = mp.Queue(maxsize=0)
         self.processes = []
@@ -35,10 +34,6 @@ class Downloader:
 
     def terminate(self):
         self.terminating = True
-        # if self.cli_initialized:
-        #     sys.stdout.write("\033[{};{}H".format(self.parts + CLI_STATUS_STARTLINE + 2, 0))
-        #     sys.stdout.write("\033[?25h")  # show cursor
-        #     self.cli_initialized = False
 
         print('Terminating download. Please wait for stopping all processes.')
         if hasattr(self, "captcha_process") and self.captcha_process is not None:
@@ -52,28 +47,15 @@ class Downloader:
             self.monitor.terminate()
         print('End download monitor')
 
-    def _captcha_print_func_wrapper(self, text):
-        if not self.cli_initialized:
-            sys.stdout.write(colors.blue(
-                "[Link solve]\t") + text + "\033[K\r")
-        else:
-            utils.print_captcha_status(text, self.parts)
-
-    def _captcha_breaker(self, page, parts):
-        if page.isDirectDownload:
-            msg = "Solve direct dlink .."
-        else:
-            msg = "Solve CAPTCHA dlink .."
-
+    def _captcha_breaker(self):
         # utils.print_captcha_status(msg, parts)
         for url in self.captcha_download_links_generator:
-            utils.print_captcha_status(msg, parts)
             self.download_url_queue.put(url)
 
     @staticmethod
     def _save_progress(filename, parts, size, interval_sec):
 
-        m = SegFileMonitor(filename, utils.print_saved_status, interval_sec)
+        m = SegFileMonitor(filename, interval_sec)
 
         t_start = time.time()
         s_start = m.size()
@@ -95,15 +77,6 @@ class Downloader:
 
             remaining = (size - s) / total_bps if total_bps > 0 else 0
 
-            utils.print_saved_status(
-                f"{(s / 1024 ** 2):.2f} MB"
-                f" ({(s / size * 100):.2f} %)"
-                f"\tavg. speed: {(total_bps / 1024 ** 2):.2f} MB/s"
-                f"\tcurr. speed: {(now_bps / 1024 ** 2):.2f} MB/s"
-                f"\tremaining: {timedelta(seconds=round(remaining))}",
-                parts
-            )
-
     @staticmethod
     def _download_part(part, download_url_queue, print_part_info_queue):
         """Download given part of the download.
@@ -112,8 +85,9 @@ class Downloader:
                 part (dict): Specification of the part to download
         """
 
-        id = part.id
-        utils.print_part_status(id, "Starting download")
+        idx = part.id
+        print_part_info_queue.put(f"part {idx}", "text", "Starting download")
+        print_part_info_queue.put(f"part {idx}", "size_total", part.size / 1024**2)
 
         part.started = time.time()
         part.now_downloaded = 0
@@ -125,15 +99,12 @@ class Downloader:
         })
 
         if r.status_code == 429:
-            utils.print_part_status(id, colors.yellow(
-                "Status code 429 Too Many Requests returned... will try again in few seconds"))
+            print_part_info_queue.put(f"part {idx}", "text", f"Err {r.status_code}. Retrying")
             time.sleep(5)
             return Downloader._download_part(part, download_url_queue)
 
         if r.status_code != 206 and r.status_code != 200:
-            utils.print_part_status(id, colors.red(
-                f"Status code {r.status_code} returned: {part.pfrom + part.downloaded}/{part.pto}"))
-            sys.exit(1)
+            print_part_info_queue.put(f"part {idx}", "text", f"Err {r.status_code}. Error")
 
         # reimplement as multisegment write file class
         for chunk in r.iter_content(chunk_size=DOWN_CHUNK_SIZE):
@@ -157,27 +128,24 @@ class Downloader:
                 #     str(timedelta(seconds=round(remaining))),
                 # ))
 
-                s = "{:.2f}%\t{:.2f}/{:.2f} MB\tspeed: {:.2f} KB/s\telapsed: {}\tremaining: {}".format(
-                    round(part.downloaded / part.size * 100, 2),
-                    round(part.downloaded / 1024**2,
-                          2), round(part.size / 1024**2, 2),
-                    round(speed / 1024, 2),
-                    str(timedelta(seconds=round(elapsed))),
-                    str(timedelta(seconds=round(remaining))))
-                print_part_info_queue.put((id, s))
+                print_part_info_queue.put(f"part {idx}", "size_curr", part.downloaded / 1024**2)
+                print_part_info_queue.put(f"part {idx}", "speed_curr", speed / 1024)
+                print_part_info_queue.put(f"part {idx}", "speed_avg", part.downloaded / 1024 / elapsed)
+                print_part_info_queue.put(f"part {idx}", "elapsed", elapsed)
+                print_part_info_queue.put(f"part {idx}", "remaining", remaining)
 
         # download end status
         r.close()
         part.elapsed = time.time() - part.started
 
-        utils.print_part_status(id, colors.green("Successfully downloaded {}{} MB in {} (speed {} KB/s)".format(
-            round(part.now_downloaded / 1024**2, 2),
-            "" if part.now_downloaded == part.downloaded else (
-                "/"+str(round(part.downloaded / 1024**2, 2))
-            ),
-            str(timedelta(seconds=round(part.elapsed))),
-            round(part.now_downloaded / part.elapsed / 1024, 2) if part.elapsed > 0 else 0
-        )))
+        # utils.print_part_status(id, colors.green("Successfully downloaded {}{} MB in {} (speed {} KB/s)".format(
+        #     round(part.now_downloaded / 1024**2, 2),
+        #     "" if part.now_downloaded == part.downloaded else (
+        #         "/"+str(round(part.downloaded / 1024**2, 2))
+        #     ),
+        #     str(timedelta(seconds=round(part.elapsed))),
+        #     round(part.now_downloaded / part.elapsed / 1024, 2) if part.elapsed > 0 else 0
+        # )))
 
         # close part file files
         part.close()
@@ -263,23 +231,34 @@ class Downloader:
 
         # 2. Initialize cli status table interface
         # if windows, use 'cls', otherwise use 'clear'
-        os.system('cls' if os.name == 'nt' else 'clear')
-        sys.stdout.write("\033[?25l")  # hide cursor
-        self.cli_initialized = True
+
+        # os.system('cls' if os.name == 'nt' else 'clear')
+        # sys.stdout.write("\033[?25l")  # hide cursor
+        # self.cli_initialized = True
+
         page.cli_initialized = True  # for tor in Page
-        print(colors.blue("File:\t\t") + colors.bold(page.filename))
-        print(colors.blue("URL:\t\t") + page.url)
-        print(colors.blue("Download type:\t") + self.download_type)
-        print(colors.blue("Size / parts: \t") +
-              colors.bold(f"{round(total_size / 1024**2, 2)}MB => " +
-              f"{file_data.parts} x {round(file_data.part_size / 1024**2, 2)}MB"))
+
+        # print(colors.blue("File:\t\t") + colors.bold(page.filename))
+        # print(colors.blue("URL:\t\t") + page.url)
+        # print(colors.blue("Download type:\t") + self.download_type)
+        # print(colors.blue("Size / parts: \t") +
+        #       colors.bold(f"{round(total_size / 1024**2, 2)}MB => " +
+        #       f"{file_data.parts} x {round(file_data.part_size / 1024**2, 2)}MB"))
+
+        self.print_part_info_queue.put("filename", "text", page.filename)
+        self.print_part_info_queue.put("url", "text", page.url)
+        self.print_part_info_queue.put("download type", "text", self.download_type)
+        self.print_part_info_queue.put("file parts", "text", f"{file_data.parts} x {file_data.part_size / 1024**2:.2f} MB => {total_size / 1024**2:.2f} MB")
 
         # fill placeholder before download started
         for part in downloads:
+            idx = part.id
             if page.isDirectDownload:
-                utils.print_part_status(part.id, "Waiting for direct link...")
+                self.print_part_info_queue.put(f"part {idx}", "text", "Waiting for direct link")
+                # utils.print_part_status(part.id, "Waiting for direct link...")
             else:
-                utils.print_part_status(part.id, "Waiting for CAPTCHA...")
+                self.print_part_info_queue.put(f"part {idx}", "text", "Waiting for CAPTCHA")
+                # utils.print_part_status(part.id, "Waiting for CAPTCHA...")
 
         # Prepare queue for recycling download URLs
         self.download_url_queue = mp.Queue(maxsize=0)
@@ -306,11 +285,14 @@ class Downloader:
         for part in downloads:
             if self.terminating:
                 return
-            id = part.id
+            idx = part.id
 
             if part.downloaded == part.size:
-                utils.print_part_status(id, colors.green(
-                    "Already downloaded from previous run, skipping"))
+                # utils.print_part_status(id, colors.green(
+                #     "Already downloaded from previous run, skipping"))
+                self.print_part_info_queue.put(f"part {idx}", "text", "Already downloaded")
+                self.print_part_info_queue.put(f"part {idx}", "percentage", "100")
+
                 page.alreadyDownloaded += 1
                 continue
 
@@ -331,12 +313,12 @@ class Downloader:
         if self.isLimited:
             # no need for another CAPTCHAs
             self.captcha_process.terminate()
-            if self.isCaptcha:
-                utils.print_captcha_status(
-                    "All downloads started, no need to solve another CAPTCHAs..", self.parts)
-            else:
-                utils.print_captcha_status(
-                    "All downloads started, no need to solve another direct links..", self.parts)
+            # if self.isCaptcha:
+            #     utils.print_captcha_status(
+            #         "All downloads started, no need to solve another CAPTCHAs..", self.parts)
+            # else:
+            #     utils.print_captcha_status(
+            #         "All downloads started, no need to solve another direct links..", self.parts)
 
         # 4. Wait for all downloads to finish
         success = True

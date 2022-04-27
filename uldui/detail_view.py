@@ -41,7 +41,3 @@ class UldDetailView(uw.WidgetWrap):
     def show_details(self, data):
         self.update("filename", "text", data.filename)
         self.update("url", "text", data.url)
-
-    def write_line(self, i, line):
-        self.lines[i] = line
-        self.text.set_text("\n".join(self.lines))
