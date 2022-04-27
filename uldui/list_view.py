@@ -18,20 +18,20 @@ class UldListView(uw.WidgetWrap):
         uw.emit_signal(self, 'show_details', focus_w.data)
 
     def create_total_list_item(self):
-        return list_item.ListItem(0, {"name": "Total"}, "footer", "country_selected")
+        return list_item.ListItem(0, {"name": "Total"}, "footer", "item_selected")
 
     def AddItem(self, text):
         i = len(self.walker)
-        attr = f"country{i % 2}"
+        attr = f"item{i % 2}"
         data = {"name": text, "pop": "325,084,756", "gdp": "$ 19.485 trillion"}
-        w = list_item.ListItem(i, data, attr, "country_selected")
+        w = list_item.ListItem(i, data, attr, "item_selected")
         self.walker.append(w)
 
     def set_data(self, countries):
         countries_widgets = []
         for i, c in enumerate(countries):
-            attr = f"country{i % 2}"
-            countries_widgets.append(list_item.ListItem(i, c, attr, "country_selected"))
+            attr = f"item{i % 2}"
+            countries_widgets.append(list_item.ListItem(i, c, attr, "item_selected"))
 
         uw.disconnect_signal(self.walker, 'modified', self.modified)
 

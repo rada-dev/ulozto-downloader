@@ -1,12 +1,12 @@
 from .const import CLI_STATUS_STARTLINE, DOWNPOSTFIX, DOWN_CHUNK_SIZE, CACHEPOSTFIX
-from . import utils
+# from . import utils
 from .torrunner import TorRunner
 from .segfile import SegFileLoader, SegFileMonitor
 from .page import Page
 import colors
 import requests
 import os
-import sys
+# import sys
 import multiprocessing as mp
 import threading
 import time
@@ -15,28 +15,30 @@ from types import FunctionType
 
 
 class Downloader:
-    cli_initialized: bool
-    terminating: bool
-    processes: slice
-    captcha_process: mp.Process
-    captcha_solve_func: FunctionType
-    parts: int
+    # cli_initialized: bool
+    # terminating: bool
+    # processes: slice
+    # captcha_process: mp.Process
+    # captcha_solve_func: FunctionType
+    # parts: int
 
     def __init__(self, captcha_solve_func, print_part_info_queue):
         self.captcha_solve_func = captcha_solve_func
         self.print_part_info_queue = print_part_info_queue
-        self.cli_initialized = False
+        # self.cli_initialized = False
+        self.terminating = False
         self.download_url_queue = mp.Queue(maxsize=0)
+        self.processes = []
+        self.captcha_process = None
         self.thread = None
         self.monitor = None
 
     def terminate(self):
         self.terminating = True
-        if self.cli_initialized:
-            sys.stdout.write("\033[{};{}H".format(
-                self.parts + CLI_STATUS_STARTLINE + 2, 0))
-            sys.stdout.write("\033[?25h")  # show cursor
-            self.cli_initialized = False
+        # if self.cli_initialized:
+        #     sys.stdout.write("\033[{};{}H".format(self.parts + CLI_STATUS_STARTLINE + 2, 0))
+        #     sys.stdout.write("\033[?25h")  # show cursor
+        #     self.cli_initialized = False
 
         print('Terminating download. Please wait for stopping all processes.')
         if hasattr(self, "captcha_process") and self.captcha_process is not None:
@@ -58,7 +60,6 @@ class Downloader:
             utils.print_captcha_status(text, self.parts)
 
     def _captcha_breaker(self, page, parts):
-        msg = ""
         if page.isDirectDownload:
             msg = "Solve direct dlink .."
         else:

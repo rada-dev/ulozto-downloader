@@ -35,9 +35,9 @@ class UldFrame(uw.Frame):
         # ('popup_footer', '', '', '', 'black', 'dark green'),
 
         ("bg", "default", "default"),
-        ("country0", "white", "black"),
-        ("country1", "light gray", "black"),
-        ("country_selected", "black", "dark green"),
+        ("item0", "white", "black"),
+        ("item1", "light gray", "black"),
+        ("item_selected", "black", "dark green"),
         ("footer", "black", "dark cyan"),
         ("title", "default,bold", "default"),
         ('popup', 'black', 'dark gray'),
@@ -55,15 +55,11 @@ class UldFrame(uw.Frame):
         self.loop = uw.MainLoop(self, self.palette, unhandled_input=self.unhandled_input, pop_ups=True)
         self.loop.screen.set_terminal_properties(colors=256)
 
-        self.summary_view = detail_view.UldDetailView(3, self.print_part_info_queue)
         self.list_view = list_view.UldListView()
         self.detail_view = detail_view.UldDetailView(10, self.print_part_info_queue)
 
-        col_rows = uw.raw_display.Screen().get_cols_rows()
-        h = col_rows[0] - 2
-        f1 = uw.Filler(self.list_view, valign='top', height=h)
-        f2 = uw.Filler(self.detail_view, valign='top')
-        self.box_summary = uw.AttrMap(uw.LineBox(self.summary_view, title="Summary", title_attr="title"), "bg")
+        f1 = uw.Filler(self.list_view, valign="top", height=1000)
+        f2 = uw.Filler(self.detail_view, valign="top", height=1000)
         self.box_list = uw.AttrMap(uw.LineBox(f1, title="List of Files", title_attr="title"), "bg")
         self.box_details = uw.AttrMap(uw.LineBox(f2, title="File Details", title_attr="title"), "bg")
         self.olay_add_link = popups.UldOverlay(self)
@@ -82,9 +78,9 @@ class UldFrame(uw.Frame):
 
         uw.connect_signal(self.list_view, 'show_details', self.show_details)
 
-        columns = uw.Columns([('weight', 1, self.box_list), ('weight', 1, self.box_details)])
+        pile = uw.Pile([('weight', 1, self.box_list), ('weight', 1, self.box_details)])
 
-        super(UldFrame, self).__init__(header=self.box_summary, body=columns, footer=self.footer)
+        super(UldFrame, self).__init__(body=pile, footer=self.footer)
         self.thread.start()
 
     def show_details(self, data):
