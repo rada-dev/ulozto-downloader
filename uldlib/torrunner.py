@@ -5,10 +5,6 @@ import os
 import uuid
 import shutil
 import re
-try:
-    from .utils import print_tor_status
-except ImportError:
-    from utils import print_tor_status
 
 
 class TorRunner:
@@ -47,25 +43,25 @@ class TorRunner:
         c.write(config)
         c.close()
 
-        def print_cli_wrapper(line):
-            return print_tor_status(line, parts)
-
-        def print_no_cli(line):
-            return print(line, end="\r")
-
-        if cli_initialized:
-            print_func = print_cli_wrapper
-        else:
-            print_func = print_no_cli
+        # def print_cli_wrapper(line):
+        #     return print_tor_status(line, parts)
+        #
+        # def print_no_cli(line):
+        #     return print(line, end="\r")
+        #
+        # if cli_initialized:
+        #     print_func = print_cli_wrapper
+        # else:
+        #     print_func = print_no_cli
 
         def get_tor_ready(line):
             p = re.compile(r'Bootstrapped \d+%')
             msg = re.findall(p, line)
 
-            if len(msg) > 0:
-                print_func(f"Tor: {msg[0]}")  # log
-            if "Bootstrapped 100%" in line:
-                print_func("TOR is ready, download links started")
+            # if len(msg) > 0:
+            #     print_func(f"Tor: {msg[0]}")  # log
+            # if "Bootstrapped 100%" in line:
+            #     print_func("TOR is ready, download links started")
 
         self.process = stem.process.launch_tor(
             torrc_path=os.path.join(self.ddir, "torrc"),
@@ -78,12 +74,12 @@ class TorRunner:
 
     def stop(self):
         if hasattr(self, "process"):
-            print("Terminating tor..")
+            # print("Terminating tor..")
             self.process.terminate()
 
         if os.path.exists(self.ddir):
             shutil.rmtree(self.ddir, ignore_errors=True)
-            print(f"Removed tor data dir: {self.ddir}")
+            # print(f"Removed tor data dir: {self.ddir}")
 
     def __del__(self):
         self.stop()

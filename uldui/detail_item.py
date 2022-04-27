@@ -201,7 +201,7 @@ class PartItem(uw.WidgetWrap):
 
     @staticmethod
     def seconds_to_hh_mm_ss(seconds):
-        hh, ss = divmod(seconds, 3600)
+        hh, ss = divmod(int(round(seconds)), 3600)
         mm, ss = divmod(ss, 60)
         return f"{hh:02d}:{mm:02d}:{ss:02d}"
 
