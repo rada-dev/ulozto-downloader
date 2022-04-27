@@ -59,7 +59,6 @@ class UldFrame(uw.Frame):
         uw.connect_signal(self.list_view, 'show_details', self.detail_view.show_details)
         uw.connect_signal(self.olay_add_link.edit, 'add_item', self.list_view.AddItem)
         uw.connect_signal(self.list_view, 'added_item', self.detail_view.added_item)
-        uw.connect_signal(self.detail_view, 'update', self.detail_view.update)
 
         self.pile = uw.Pile([('weight', 1, self.box_list), ('weight', 1, self.box_details)], focus_item=0)
 
@@ -97,4 +96,5 @@ class UldFrame(uw.Frame):
             if content == "quit":
                 return
             else:
-                uw.emit_signal(self.detail_view, "update", *content)
+                self.detail_view.update(*content)
+                self.loop.draw_screen()

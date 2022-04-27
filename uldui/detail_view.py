@@ -8,7 +8,6 @@ except ImportError:
 class UldDetailView(uw.WidgetWrap):
 
     def __init__(self, n_parts, print_part_info_queue):
-        uw.register_signal(self.__class__, ['update'])
         self.n_parts = n_parts
         self.items = {}
         self.walker = uw.SimpleFocusListWalker([])
