@@ -94,8 +94,8 @@ class Downloader:
         """
 
         idx = part.id
-        print_part_info_queue.put(f"part {idx}", "text", "Starting download")
-        print_part_info_queue.put(f"part {idx}", "size_total", part.size / 1024**2)
+        print_part_info_queue.put((f"part {idx}", "text", "Starting download"))
+        print_part_info_queue.put((f"part {idx}", "size_total", part.size / 1024**2))
 
         part.started = time.time()
         part.now_downloaded = 0
@@ -107,12 +107,12 @@ class Downloader:
         })
 
         if r.status_code == 429:
-            print_part_info_queue.put(f"part {idx}", "text", f"Err {r.status_code}. Retrying")
+            print_part_info_queue.put((f"part {idx}", "text", f"Err {r.status_code}. Retrying"))
             time.sleep(5)
             return Downloader._download_part(part, download_url_queue)
 
         if r.status_code != 206 and r.status_code != 200:
-            print_part_info_queue.put(f"part {idx}", "text", f"Err {r.status_code}. Error")
+            print_part_info_queue.put((f"part {idx}", "text", f"Err {r.status_code}. Error"))
 
         # reimplement as multisegment write file class
         for chunk in r.iter_content(chunk_size=DOWN_CHUNK_SIZE):
@@ -136,11 +136,11 @@ class Downloader:
                 #     str(timedelta(seconds=round(remaining))),
                 # ))
 
-                print_part_info_queue.put(f"part {idx}", "size_curr", part.downloaded / 1024**2)
-                print_part_info_queue.put(f"part {idx}", "speed_curr", speed / 1024)
-                print_part_info_queue.put(f"part {idx}", "speed_avg", part.downloaded / 1024 / elapsed)
-                print_part_info_queue.put(f"part {idx}", "elapsed", elapsed)
-                print_part_info_queue.put(f"part {idx}", "remaining", remaining)
+                print_part_info_queue.put((f"part {idx}", "size_curr", part.downloaded / 1024**2))
+                print_part_info_queue.put((f"part {idx}", "speed_curr", speed / 1024))
+                print_part_info_queue.put((f"part {idx}", "speed_avg", part.downloaded / 1024 / elapsed))
+                print_part_info_queue.put((f"part {idx}", "elapsed", elapsed))
+                print_part_info_queue.put((f"part {idx}", "remaining", remaining))
 
         # download end status
         r.close()
@@ -252,19 +252,19 @@ class Downloader:
         #       colors.bold(f"{round(total_size / 1024**2, 2)}MB => " +
         #       f"{file_data.parts} x {round(file_data.part_size / 1024**2, 2)}MB"))
 
-        self.print_part_info_queue.put("filename", "text", page.filename)
-        self.print_part_info_queue.put("url", "text", page.url)
-        self.print_part_info_queue.put("download type", "text", self.download_type)
-        self.print_part_info_queue.put("file parts", "text", f"{file_data.parts} x {file_data.part_size / 1024**2:.2f} MB => {total_size / 1024**2:.2f} MB")
+        self.print_part_info_queue.put(("filename", "text", page.filename))
+        self.print_part_info_queue.put(("url", "text", page.url))
+        self.print_part_info_queue.put(("download type", "text", self.download_type))
+        self.print_part_info_queue.put(("file parts", "text", f"{file_data.parts} x {file_data.part_size / 1024**2:.2f} MB => {total_size / 1024**2:.2f} MB"))
 
         # fill placeholder before download started
         for part in downloads:
             idx = part.id
             if page.isDirectDownload:
-                self.print_part_info_queue.put(f"part {idx}", "text", "Waiting for direct link")
+                self.print_part_info_queue.put((f"part {idx}", "text", "Waiting for direct link"))
                 # utils.print_part_status(part.id, "Waiting for direct link...")
             else:
-                self.print_part_info_queue.put(f"part {idx}", "text", "Waiting for CAPTCHA")
+                self.print_part_info_queue.put((f"part {idx}", "text", "Waiting for CAPTCHA"))
                 # utils.print_part_status(part.id, "Waiting for CAPTCHA...")
 
         # Prepare queue for recycling download URLs
@@ -297,8 +297,8 @@ class Downloader:
             if part.downloaded == part.size:
                 # utils.print_part_status(id, colors.green(
                 #     "Already downloaded from previous run, skipping"))
-                self.print_part_info_queue.put(f"part {idx}", "text", "Already downloaded")
-                self.print_part_info_queue.put(f"part {idx}", "percentage", "100")
+                self.print_part_info_queue.put((f"part {idx}", "text", "Already downloaded"))
+                self.print_part_info_queue.put((f"part {idx}", "percentage", "100"))
 
                 page.alreadyDownloaded += 1
                 continue

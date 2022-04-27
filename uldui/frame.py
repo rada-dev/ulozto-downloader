@@ -67,12 +67,13 @@ class UldFrame(uw.Frame):
         
     def keypress(self, size, key):
         if key == "f2":
-            i_highlighted = self.list_view.walker.focus
-            item = self.list_view.walker[i_highlighted]
-            url = item.data.url
-            parts = item.data.parts
-            target_dir = item.data.target_dir
-            self.downloaders[i_highlighted].download_thread(url, parts, target_dir)
+            if len(self.list_view.walker) > 0:
+                i_highlighted = self.list_view.walker.focus
+                item = self.list_view.walker[i_highlighted]
+                url = item.data.url
+                parts = item.data.parts
+                target_dir = item.data.target_dir
+                self.downloaders[i_highlighted].download_thread(url, parts, target_dir)
         elif key == "f6":
             self.loop.widget = self.olay_add_link
         elif key == "tab":
@@ -91,8 +92,8 @@ class UldFrame(uw.Frame):
 
     def update_ui(self):
         while True:
-            i, line = self.print_part_info_queue.get()
-            if i == -1 and line == "quit":
+            content = self.print_part_info_queue.get()
+            if content == "quit":
                 return
             else:
-                self.detail_view.write_line(i, line)
+                self.detail_view.update(*content)

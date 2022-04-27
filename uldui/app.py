@@ -7,5 +7,5 @@ class App(object):
         self.frame.loop.run()
 
     def join(self):
-        self.frame.print_part_info_queue.put((-1, "quit"))
+        self.frame.print_part_info_queue.put("quit")
         self.frame.thread.join()
