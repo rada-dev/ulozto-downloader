@@ -95,6 +95,7 @@ class UldFrame(uw.Frame):
             content = self.print_part_info_queue.get()
             if content == "quit":
                 return
+            elif content == "redraw":
+                self.loop.draw_screen()
             else:
                 self.detail_view.update(*content)
-                self.loop.draw_screen()

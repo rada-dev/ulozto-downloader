@@ -141,6 +141,7 @@ class Downloader:
                 print_part_info_queue.put((f"part {idx}", "speed_avg", part.now_downloaded / 1024 / elapsed))
                 print_part_info_queue.put((f"part {idx}", "elapsed", elapsed))
                 print_part_info_queue.put((f"part {idx}", "remaining", remaining))
+                print_part_info_queue.put("redraw")
 
         # download end status
         r.close()
@@ -267,6 +268,8 @@ class Downloader:
                 self.print_part_info_queue.put((f"part {idx}", "text", "Waiting for CAPTCHA"))
                 # utils.print_part_status(part.id, "Waiting for CAPTCHA...")
 
+        self.print_part_info_queue.put("redraw")
+
         # Prepare queue for recycling download URLs
         self.download_url_queue = mp.Queue(maxsize=0)
 
@@ -285,7 +288,7 @@ class Downloader:
 
         # save status monitor
         self.monitor = mp.Process(target=Downloader._save_progress, args=(
-            file_data.filename, file_data.parts, file_data.size, 1/3))
+            file_data.filename, file_data.parts, file_data.size, 1/2))
         self.monitor.start()
 
         # 3. Start all downloads fill self.processes
