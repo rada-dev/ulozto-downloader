@@ -87,6 +87,9 @@ class AutoReadCaptcha:
         import tflite_runtime.interpreter as tflite
         import numpy as np
 
+        if not img_url.startswith("https://"):
+            img_url = "https://"+img_url.split("://")[-1]
+
         print_func("Auto solving CAPTCHA")
 
         interpreter = tflite.Interpreter(model_content=self.model_content)
